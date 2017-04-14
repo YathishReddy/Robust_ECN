@@ -37,6 +37,7 @@
 #include "tcp-rx-buffer.h"
 #include "rtt-estimator.h"
 #include <map>
+#include "ns3/random-variable-stream.h"
 
 
 namespace ns3 {
@@ -48,6 +49,7 @@ class Packet;
 class TcpL4Protocol;
 class TcpHeader;
 class TcpCongestionOps;
+class UniformRandomVariable;
 
 /**
  * \ingroup tcp
@@ -1227,6 +1229,7 @@ protected:
   int m_recn_nonce_sum_sender;
   int m_recn_nonce_sum_receiver;
   int m_recn_nonce_synch;
+  Ptr<UniformRandomVariable> m_recn_uv;
   TracedValue<SequenceNumber32>m_recn_CWRSeq;
   TracedValue<SequenceNumber32>m_recn_lastNonceSeq;
   //*RECN

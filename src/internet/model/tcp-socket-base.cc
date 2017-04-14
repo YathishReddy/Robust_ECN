@@ -53,6 +53,7 @@
 #include "tcp-option-sack.h"
 #include "rtt-estimator.h"
 #include "tcp-congestion-ops.h"
+#include "ns3/random-variable-stream.h"
 
 #include <math.h>
 #include <algorithm>
@@ -390,6 +391,7 @@ TcpSocketBase::TcpSocketBase (void)
   m_rxBuffer = CreateObject<TcpRxBuffer> ();
   m_txBuffer = CreateObject<TcpTxBuffer> ();
   m_tcb      = CreateObject<TcpSocketState> ();
+  m_recn_uv = CreateObject<UniformRandomVariable> ();
 
   bool ok;
 
@@ -493,6 +495,7 @@ TcpSocketBase::TcpSocketBase (const TcpSocketBase& sock)
   m_txBuffer = CopyObject (sock.m_txBuffer);
   m_rxBuffer = CopyObject (sock.m_rxBuffer);
   m_tcb = CopyObject (sock.m_tcb);
+  m_recn_uv = CreateObject<UniformRandomVariable> ();
   if (sock.m_congestionControl)
     {
       m_congestionControl = sock.m_congestionControl->Fork ();
@@ -2969,8 +2972,11 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
       if (m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED && (GetIpTos () & 0x3) == 0 && !isRetransmission && m_tcb->m_recn_state)
         {
           uint8_t temp = 0x01;
+          double u = m_recn_uv->GetValue ();
+          if(u > 0.5)
+            temp = 0x02;
           ipTosTag.SetTos (GetIpTos () | temp);
-          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ 0x01;
+          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ temp;
           m_tcb->NonceSum[seq + SequenceNumber32 (sz)] = m_recn_nonce_sum_sender;
         }
       else if (m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED && (GetIpTos () & 0x3) == 0 && !isRetransmission )
@@ -2989,9 +2995,12 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
         {
           SocketIpTosTag ipTosTag;
           uint8_t temp = 0x01;
+          double u = m_recn_uv->GetValue ();
+          if(u > 0.5)
+            temp = 0x02;
           ipTosTag.SetTos (temp);
           p->AddPacketTag (ipTosTag);
-          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ 0x01;
+          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ temp;
           m_tcb->NonceSum[seq + SequenceNumber32 (sz)] = m_recn_nonce_sum_sender;
         }
       else if (m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED && !isRetransmission)
@@ -3008,8 +3017,11 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
       if (m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED && (GetIpv6Tclass () & 0x3) == 0 && !isRetransmission && m_tcb->m_recn_state)
         {
           uint8_t temp = 0x01;
+          double u = m_recn_uv->GetValue ();
+          if(u > 0.5)
+            temp = 0x02;
           ipTclassTag.SetTclass (GetIpv6Tclass () | temp);
-          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ 0x01;
+          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ temp;
           m_tcb->NonceSum[seq + SequenceNumber32 (sz)] = m_recn_nonce_sum_sender;
         }
       else if (m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED && (GetIpv6Tclass () & 0x3) == 0 && !isRetransmission)
@@ -3028,9 +3040,12 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
         {
           SocketIpv6TclassTag ipTclassTag;
           uint8_t temp = 0x01;
+          double u = m_recn_uv->GetValue ();
+          if(u > 0.5)
+            temp = 0x02;
           ipTclassTag.SetTclass (temp);
           p->AddPacketTag (ipTclassTag);
-          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ 0x01;
+          m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ temp;
           m_tcb->NonceSum[seq + SequenceNumber32 (sz)] = m_recn_nonce_sum_sender;
         }
       else if (m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED && !isRetransmission)
@@ -3712,12 +3727,15 @@ TcpSocketBase::PersistTimeout ()
     {
       SocketIpTosTag ipTosTag;
       uint8_t temp = 0x01;
+      double u = m_recn_uv->GetValue ();
+      if(u > 0.5)
+        temp = 0x02;
       ipTosTag.SetTos (temp);
       p->AddPacketTag (ipTosTag);
       SocketIpv6TclassTag ipTclassTag;
       ipTclassTag.SetTclass (temp);
       p->AddPacketTag (ipTclassTag);
-      m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ 0x01;
+      m_recn_nonce_sum_sender = m_recn_nonce_sum_sender ^ temp;
       m_tcb->NonceSum[m_tcb->m_nextTxSequence + 1] = m_recn_nonce_sum_sender;
     }
   else if(m_tcb->m_ecnState != TcpSocketState::ECN_DISABLED)
