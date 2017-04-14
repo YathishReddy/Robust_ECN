@@ -141,14 +141,14 @@ public:
    * \brief Definition of the Ecn state machine
    *
    */
-  typedef enum 
+  typedef enum
   {
-    ECN_DISABLED = 0, /**< ECN disabled traffic                                                                          */ 
-    ECN_IDLE,         /**< ECN is enabled  but currently there is no action pertaining to ECE or CWR to be taken         */ 
+    ECN_DISABLED = 0, /**< ECN disabled traffic                                                                          */
+    ECN_IDLE,         /**< ECN is enabled  but currently there is no action pertaining to ECE or CWR to be taken         */
     ECN_CE_RCVD,      /**< This state indicates that the receiver has received a packet with CE bit set in IP header     */
     ECN_ECE_SENT,     /**< This state indicates that the receiver has sent an ACK with ECE bit set in TCP header         */
     ECN_ECE_RCVD,     /**< This state indicates that the sender has received an ACK with ECE bit set in TCP header       */
-    ECN_CWR_SENT      /**< This state indicates that the sender has reduced the congestion window, and sent a packet     
+    ECN_CWR_SENT      /**< This state indicates that the sender has reduced the congestion window, and sent a packet
                         * with CWR bit set in TCP header                                                                 */
   } EcnState_t;
 
@@ -181,7 +181,7 @@ public:
    * \brief Literal names of ECN states for use in log messages
    */
   static const char* const EcnStateName[TcpSocketState::ECN_CWR_SENT+1];
-  
+
 
   // Congestion control
   TracedValue<uint32_t>  m_cWnd;            //!< Congestion window
@@ -199,11 +199,11 @@ public:
   bool m_recn_state;                         //!< Current Robust ECN State
   std::map<SequenceNumber32,int> NonceSum;           //!< Maps Sequence Number to thier respective Nonce Sums
   std::priority_queue<std::pair<SequenceNumber32,int>,std::vector<std::pair<SequenceNumber32,int> >,std::greater<std::pair<SequenceNumber32,int> > > NonceOutOfOrder; //!< 2-D Vector to deal with Out of Order Packets
-  
+
   TracedValue<SequenceNumber32> m_highTxMark; //!< Highest seqno ever sent, regardless of ReTx
   TracedValue<SequenceNumber32> m_nextTxSequence; //!< Next seqnum to be sent (SND.NXT), ReTx pushes it back
 
-  uint32_t               m_rcvTimestampValue;     //!< Receiver Timestamp value 
+  uint32_t               m_rcvTimestampValue;     //!< Receiver Timestamp value
   uint32_t               m_rcvTimestampEchoReply; //!< Sender Timestamp echoed by the receiver
 
   /**
@@ -443,7 +443,7 @@ public:
    * \brief Callback pointer for congestion state trace chaining
    */
   TracedCallback<TcpSocketState::TcpCongState_t, TcpSocketState::TcpCongState_t> m_congStateTrace;
- 
+
   /**
    * \brief Callback pointer for congestion state trace chaining
    */
@@ -1220,16 +1220,17 @@ protected:
   bool                     m_ecn;             //!< Socket ECN capability
   TracedValue<SequenceNumber32> m_ecnEchoSeq; //!< Sequence number of the last received ECN Echo
   TracedValue<SequenceNumber32> m_ecnCESeq;   //!< Sequence number of the last received Congestion Experienced
-  TracedValue<SequenceNumber32> m_ecnCWRSeq;  //!< Sequence number of the last sent CWR 
-  
+  TracedValue<SequenceNumber32> m_ecnCWRSeq;  //!< Sequence number of the last sent CWR
+
   //RECN
   bool m_recn;
   int m_recn_nonce_sum_sender;
   int m_recn_nonce_sum_receiver;
   int m_recn_nonce_synch;
+  TracedValue<SequenceNumber32>m_recn_CWRSeq;
   TracedValue<SequenceNumber32>m_recn_lastNonceSeq;
   //*RECN
-  
+
 };
 
 /**
