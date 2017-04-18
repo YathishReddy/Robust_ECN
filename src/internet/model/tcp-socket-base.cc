@@ -142,6 +142,10 @@ TcpSocketBase::GetTypeId (void)
                     BooleanValue (false),
                     MakeBooleanAccessor (&TcpSocketBase::m_ecn),
                     MakeBooleanChecker ())
+    .AddAttribute ("UseRecn", "True to use RECN functionality",
+                    BooleanValue (false),
+                    MakeBooleanAccessor (&TcpSocketBase::m_recn),
+                    MakeBooleanChecker ())
     .AddTraceSource ("RTO",
                      "Retransmission timeout",
                      MakeTraceSourceAccessor (&TcpSocketBase::m_rto),
@@ -4354,6 +4358,12 @@ void
 TcpSocketBase::SetEcn()
 {
   m_ecn = true;
+}
+
+void
+TcpSocketBase::SetRecn()
+{
+  m_recn = true;
 }
 
 //RttHistory methods

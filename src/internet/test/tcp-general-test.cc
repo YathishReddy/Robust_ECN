@@ -903,7 +903,7 @@ TcpGeneralTest::SetInitialCwnd (SocketWho who, uint32_t initialCwnd)
     }
 }
 
-void 
+void
 TcpGeneralTest::SetECN (SocketWho who)
 {
   if (who == SENDER)
@@ -913,6 +913,23 @@ TcpGeneralTest::SetECN (SocketWho who)
    else if (who == RECEIVER)
     {
       m_receiverSocket->SetEcn ();
+    }
+  else
+    {
+      NS_FATAL_ERROR ("Not defined");
+    }
+}
+
+void
+TcpGeneralTest::SetRECN (SocketWho who)
+{
+  if (who == SENDER)
+    {
+      m_senderSocket->SetRecn ();
+    }
+   else if (who == RECEIVER)
+    {
+      m_receiverSocket->SetRecn ();
     }
   else
     {
@@ -1220,4 +1237,3 @@ TcpSocketSmallAcks::Fork (void)
 {
   return CopyObject<TcpSocketSmallAcks> (this);
 }
-

@@ -66,7 +66,7 @@ def configure(conf):
         conf.report_optional_feature("nsc", "Network Simulation Cradle", False,
                                      "NSC not found (see option --with-nsc)")
         return
-    
+
     if Options.platform in ['linux', 'freebsd']:
         arch = os.uname()[4]
     else:
@@ -78,7 +78,7 @@ def configure(conf):
         conf.check_nonfatal(mandatory=True, lib='dl', define_name='HAVE_DL', uselib_store='DL')
         ok = True
     conf.msg('Checking for NSC supported architecture ' + (arch or ''), ok)
-    
+
     if not ok:
         conf.env['NSC_ENABLED'] = False
         conf.report_optional_feature("nsc", "Network Simulation Cradle", False,
@@ -150,7 +150,7 @@ def build(bld):
         'model/tcp-vegas.cc',
         'model/tcp-congestion-ops.cc',
         'model/tcp-westwood.cc',
-        'model/tcp-scalable.cc', 
+        'model/tcp-scalable.cc',
         'model/tcp-veno.cc',
         'model/tcp-bic.cc',
         'model/tcp-yeah.cc',
@@ -270,6 +270,7 @@ def build(bld):
         'test/tcp-rtt-estimation.cc',
         'test/tcp-bytes-in-flight-test.cc',
         'test/tcp-ecn-test.cc',
+        'test/tcp-recn-test.cc',
         'test/tcp-advertised-window-test.cc',
         'test/udp-test.cc',
         'test/ipv6-address-generator-test-suite.cc',
@@ -284,7 +285,7 @@ def build(bld):
         'test/tcp-endpoint-bug2211.cc',
         'test/tcp-datasentcb-test.cc',
         'test/ipv4-rip-test.cc',
-        
+
         ]
     privateheaders = bld(features='ns3privateheader')
     privateheaders.module = 'internet'
@@ -412,4 +413,3 @@ def build(bld):
         bld.recurse('examples')
 
     bld.ns3_python_bindings()
-

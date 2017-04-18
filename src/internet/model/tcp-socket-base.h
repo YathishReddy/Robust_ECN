@@ -517,6 +517,11 @@ public:
    */
   void SetEcn();
 
+  /**
+   * \brief Sets the variable m_recn true to use Robust ECN functionality
+   */
+  void SetRecn();
+
   // Necessary implementations of null functions from ns3::Socket
   virtual enum SocketErrno GetErrno (void) const;    // returns m_errno
   virtual enum SocketType GetSocketType (void) const; // returns socket type

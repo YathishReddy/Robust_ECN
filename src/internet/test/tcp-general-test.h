@@ -569,13 +569,20 @@ protected:
    */
   void SetInitialCwnd (SocketWho who, uint32_t initialCwnd);
 
-  
+
   /**
    * \brief Forcefully set the ecn mode on
    *
    * \param who socket to force
    */
   void SetECN (SocketWho who);
+
+  /**
+   * \brief Forcefully set the recn mode on
+   *
+   * \param who socket to force
+   */
+  void SetRECN (SocketWho who);
 
   /**
    * \brief Forcefully set the initial ssth
@@ -1024,4 +1031,3 @@ GetCongStateFrom (Ptr<const TcpSocketState> tcb)
 } // namespace ns3
 
 #endif // TCPGENERALTEST_H
-
