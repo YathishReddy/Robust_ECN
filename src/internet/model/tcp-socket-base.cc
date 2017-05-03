@@ -1131,6 +1131,7 @@ TcpSocketBase::DoConnect (void)
         {
           if(m_recn)
           {
+                NS_LOG_INFO("Hello");
                 SendEmptyPacket (TcpHeader::SYN | TcpHeader::ECE | TcpHeader::CWR | TcpHeader:: NS);
           }
           else
@@ -1327,6 +1328,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, const Address &fromAddress,
   // Peel off TCP header and do validity checking
   TcpHeader tcpHeader;
   uint32_t bytesRemoved = packet->RemoveHeader (tcpHeader);
+  NS_LOG_INFO("NS: " << (tcpHeader.GetFlags() & TcpHeader::NS) << "hello");
   SequenceNumber32 seq = tcpHeader.GetSequenceNumber ();
   if (bytesRemoved == 0 || bytesRemoved > 60)
     {
@@ -1568,7 +1570,7 @@ TcpSocketBase::ProcessEstablished (Ptr<Packet> packet, const TcpHeader& tcpHeade
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   // Different flags are different events
   if (tcpflags == TcpHeader::ACK)
@@ -2107,6 +2109,7 @@ void
 TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
 {
   NS_LOG_FUNCTION (this << tcpHeader);
+  NS_LOG_INFO(" ecn=" << m_ecn << " recn=" << m_recn << "ECE Flag=" << (tcpHeader.GetFlags () & (TcpHeader::ECE))<< "CWR Flag=" << (tcpHeader.GetFlags () & (TcpHeader::CWR)) << "NS Flag=" << (tcpHeader.GetFlags () & (TcpHeader::NS)) << "abcd");
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
   uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
@@ -2135,6 +2138,7 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
       /* Check if we recieved an ECN SYN packet. Change the ECN state of receiver to ECN_IDLE if the traffic is ECN capable and
        * sender has sent ECN SYN packet
        */
+
       if(m_ecn && m_recn && (tcpHeader.GetFlags () & (TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS)) == (TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS))
         {
           NS_LOG_INFO ("Received Robust ECN SYN packet");
@@ -2408,7 +2412,7 @@ TcpSocketBase::ProcessClosing (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   if (tcpflags == TcpHeader::ACK)
     {
@@ -2440,7 +2444,7 @@ TcpSocketBase::ProcessLastAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   if (tcpflags == 0)
     {
@@ -2749,6 +2753,7 @@ TcpSocketBase::SendEmptyPacket (uint16_t flags)
                     << (Simulator::Now () + m_rto.Get ()).GetSeconds ());
       m_retxEvent = Simulator::Schedule (m_rto, &TcpSocketBase::SendEmptyPacket, this, flags);
     }
+    NS_LOG_INFO( "ECE Flag=" << (header.GetFlags () & (TcpHeader::ECE)) << "NS Flag=" << (header.GetFlags () & (TcpHeader::NS)) << "efgh");
 }
 
 /* This function closes the endpoint completely. Called upon RST_TX action. */
@@ -2883,7 +2888,7 @@ TcpSocketBase::CompleteFork (Ptr<Packet> p, const TcpHeader& h,
    * packet and the traffic is ECN Capable
    */
 
-
+   NS_LOG_INFO("ECN: " << m_ecn << " RECN: " << m_recn <<" RECN STATE: " << m_tcb->m_recn_state << " NS: " << (h.GetFlags () & (TcpHeader::NS)) << "xyz");
     if(m_ecn && m_recn && (h.GetFlags () & (TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS)) == (TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS))
       {
         NS_LOG_INFO ("Received Robust ECN SYN packet");
@@ -4367,6 +4372,7 @@ TcpSocketBase::SetEcn()
 void
 TcpSocketBase::SetRecn()
 {
+  m_ecn = true;
   m_recn = true;
 }
 

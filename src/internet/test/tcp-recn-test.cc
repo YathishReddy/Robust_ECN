@@ -62,12 +62,10 @@ TcpRECNTest::ConfigureProperties ()
   TcpGeneralTest::ConfigureProperties ();
   if (m_testcase == 2 || m_testcase == 4)
     {
-      SetECN (SENDER);
       SetRECN (SENDER);
     }
   if (m_testcase == 3 || m_testcase == 4)
     {
-      SetECN (RECEIVER);
       SetRECN (RECEIVER);
     }
 }
@@ -82,7 +80,7 @@ TcpRECNTest::Rx (const Ptr<const Packet> p, const TcpHeader &h, SocketWho who)
           NS_TEST_ASSERT_MSG_NE (((h.GetFlags ()) & TcpHeader::SYN), 0, "SYN should be received as first message at the receiver");
           if (m_testcase == 2 || m_testcase == 4)
             {
-              //NS_TEST_ASSERT_MSG_NE (((h.GetFlags ()) & TcpHeader::NS), 0, "The flags ECE + CWR should be set in the TCP header of first message receieved at receiver when sender is ECN Capable");
+              NS_TEST_ASSERT_MSG_NE (((h.GetFlags ()) & TcpHeader::NS), 0, "The flags ECE + CWR should be set in the TCP header of first message receieved at receiver when sender is ECN Capable");
             }
           else
             {
@@ -143,13 +141,13 @@ static class TcpRECNTestSuite : public TestSuite
 public:
   TcpRECNTestSuite () : TestSuite ("tcp-recn-test", UNIT)
   {
-    AddTestCase (new TcpRECNTest (1, "ECN incapable sender and ECN incapable receiver"),
-                 TestCase::QUICK);
-    AddTestCase (new TcpRECNTest (2, "ECN capable sender and ECN incapable receiver"),
-                 TestCase::QUICK);
-    AddTestCase (new TcpRECNTest (3, "ECN incapable sender and ECN capable receiver"),
-                 TestCase::QUICK);
-    AddTestCase (new TcpRECNTest (4, "ECN capable sender and ECN capable receiver"),
+    // AddTestCase (new TcpRECNTest (1, "RECN incapable sender and RECN incapable receiver"),
+    //              TestCase::QUICK);
+    // AddTestCase (new TcpRECNTest (2, "RECN capable sender and RECN incapable receiver"),
+    //              TestCase::QUICK);
+    // AddTestCase (new TcpRECNTest (3, "RECN incapable sender and RECN capable receiver"),
+    //              TestCase::QUICK);
+    AddTestCase (new TcpRECNTest (4, "RECN capable sender and RECN capable receiver"),
                  TestCase::QUICK);
   }
 } g_tcpRECNTestSuite;
