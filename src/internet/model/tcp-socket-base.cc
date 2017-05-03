@@ -2080,7 +2080,7 @@ TcpSocketBase::ProcessListen (Ptr<Packet> packet, const TcpHeader& tcpHeader,
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   // Fork a socket if received a SYN. Do nothing otherwise.
   // C.f.: the LISTEN part in tcp_v4_do_rcv() in tcp_ipv4.c in Linux kernel
@@ -2109,7 +2109,7 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   if (tcpflags == 0)
     { // Bare data, accept it and move to ESTABLISHED state. This is not a normal behaviour. Remove this?
@@ -2187,6 +2187,8 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
       if(m_ecn && m_recn && (tcpHeader.GetFlags () & (TcpHeader::NS)) == (TcpHeader::NS))
         {
           m_tcb->m_recn_state = true;
+          std::cout<<"Reached ECN enable";
+          NS_LOG_INFO("Reached ECN enable");
         }
       else
         {
@@ -2219,7 +2221,7 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   if (tcpflags == 0
       || (tcpflags == TcpHeader::ACK
@@ -2334,7 +2336,7 @@ TcpSocketBase::ProcessWait (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
 
   // Extract the flags. PSH, URG, CWR and ECE are not honoured.
-  uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
+  uint16_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG | TcpHeader::CWR | TcpHeader::ECE | TcpHeader::NS);
 
   if (packet->GetSize () > 0 && tcpflags != TcpHeader::ACK)
     { // Bare data, accept it
@@ -2934,7 +2936,7 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
 
   Ptr<Packet> p = m_txBuffer->CopyFromSequence (maxSize, seq);
   uint32_t sz = p->GetSize (); // Size of packet
-  uint8_t flags = withAck ? TcpHeader::ACK : 0;
+  uint16_t flags = withAck ? TcpHeader::ACK : 0;
   uint32_t remainingData = m_txBuffer->SizeFromSequence (seq + SequenceNumber32 (sz));
 
   if (withAck)
@@ -3409,7 +3411,9 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
     }
    else if(m_tcb->m_recn_state)
    {
-        m_tcb->NonceOutOfOrder.push(std::make_pair(tcpHeader.GetSequenceNumber() + p->GetSize(),tcpHeader.GetFlags()&TcpHeader::NS));
+        Ipv4Header ipheader;
+        p->PeekHeader(ipheader);
+        m_tcb->NonceOutOfOrder.push(std::make_pair(tcpHeader.GetSequenceNumber() + p->GetSize(),ipheader.GetEcn() % 2));
    }
 
 
